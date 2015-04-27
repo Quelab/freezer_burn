@@ -1,0 +1,12 @@
+classes:
+  - nodejs
+  - freezer_burn
+
+nodejs::npm_package: npm
+#nodejs::manage_repo: true
+# nodejs::dev_package: true
+#nodejs::version: 0.10.36
+#   }
+
+# }
+# include nodejs::npm

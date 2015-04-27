@@ -19,10 +19,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.synced_folder "puppet/hieradata", "/var/lib/hieradata"
 
-  config.vm.provider "vmware_fusion" do |vb|
-    # Display the VirtualBox GUI when booting the machine
-    vb.gui = false
-  
+  config.vm.provider "vmware_fusion" do |vb|  
     # Customize the amount of memory on the VM:
     vb.memory = "1024"
   end

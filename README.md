@@ -1,5 +1,5 @@
 # Freezer Burn
-<a title="By User:Ragesoss (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons" href="http://commons.wikimedia.org/wiki/File%3AFreezer-burned_green_peas_embedded_in_ice.jpeg"><img width="256" alt="Freezer-burned green peas embedded in ice" src="//upload.wikimedia.org/wikipedia/commons/thumb/0/05/Freezer-burned_green_peas_embedded_in_ice.jpeg/256px-Freezer-burned_green_peas_embedded_in_ice.jpeg"/></a>
+<a title="By User:Ragesoss (Own work) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons" href="http://commons.wikimedia.org/wiki/File%3AFreezer-burned_green_peas_embedded_in_ice.jpeg"><img width="256" alt="Freezer-burned green peas embedded in ice" src="http://upload.wikimedia.org/wikipedia/commons/0/05/Freezer-burned_green_peas_embedded_in_ice.jpeg"/></a>
 ## Concept
 This project aims to reduce freezer burn in the following two ways:
 

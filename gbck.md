@@ -2,8 +2,9 @@
 
 ## Physical Connections:
 ![gbck_top](images/gbck_top.jpg)
+
 1. 2 USB Hubs 
-2. 1 Ethernet Port (On the top of the refrigerator) ![no_plug](images/refrigerator_top.jpg) ![plug](images/refrigerator_top_with_plug.jpg)
+2. 1 Ethernet Port ![no_plug](images/refrigerator_top.jpg) ![plug](images/refrigerator_top_with_plug.jpg)
 3. 1 Power Supply 
 
 ## Network Connection

@@ -11,3 +11,5 @@ Accomplishing those two goals is all about sensing the environment inside of the
 ## Background
 * [How Does the Freezer Burn our Food?](http://www3.interscience.wiley.com/cgi-bin/fulltext/122278975/PDFSTART)
 
+[Green Bean Connect Kit Setup](./gbck.md)
+

@@ -1,0 +1,7 @@
+[submodule "chillhub-firmware"]
+	path = chillhub-firmware
+	url = https://github.com/FirstBuild/chillhub-firmware.git
+[submodule "green-bean-connect-utils"]
+	path = green-bean-connect-utils
+	url = https://github.com/Quelab/green-bean-connect-utils.git
+	branch = master

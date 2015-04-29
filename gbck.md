@@ -52,11 +52,20 @@ ssh root@10.202.9.131
 When prompted, use 'root' as your password without the quotation marks.
 ```
 
-### Method 2
+### Hacktastic Method 2
 
-The flashing red light ...
-nmap -sP 10.1.10.1/24
+1. Hit the reset button on the GBCK, The LED light next to it will eventually flash if it doesn't then unplug the device and try again. 
+2. When the LED is flashing the GBCK is in AP mode which means you can connect to it as if you are connecting to any other wireless router. The Wireless network name and WPA2 password is printed on one of the sides of the GBCK box. Use these to connect to the device. 
+3. After you've established a wireless connection to the device ssh as root: `ssh root@192.168.10.1` and run the following command pifi wlan0 -w "QuelabDSL" "<quelabwifipw goes here>". At this point the device should reboot and connect to the Quelab wireless. 
+4. If the GBCK isn't off for too long it appears our wireless router will assign it a dhcp address of 10.1.10.161. If it is on that IP you can login as root. If it isn't on that address ... good luck ... I mean either of the following might help you to find the host (in either case you'll figure out which IPs the network connected printers are on):
+    * ping -c 1 10.1.10.255 ; arp -a
+    * nmap -sP 10.1.10.1/24
 
 ## Cloud Connection
+The GBCK software expects to talk to FireBase which is a database in the cloud. There is a way to use the BuildFirst sandbox apparently, but probably don't bother just create a new account and configure the GBCK to talk to it.
 
-
+1. Setup an account on [FireBase](http://firebase.com) The free tier account will be just fine.
+2. Click through the tutorial until you get to your dashboard where you can create an app.
+3. After you've created your app you will need to enable email + password based authentication. Login & Auth => Email & Password => Enable Email & Password Authentication
+4. On the bottom of this same screen you can add a user account for your app. You can also add a user automatically from the command line using the [GenerateFirebaseLoginAndToken script](https://github.com/FirstBuild/green-bean-connect-utils/blob/master/configuration/generateFirebaseLoginAndToken.js) There are instructions on the readme that seem to suggest you can do all of the [Network + Cloud setup](https://github.com/FirstBuild/green-bean-connect-utils/tree/master/configuration) with a couple of scripts too. Haven't tried it. I did create a different generate [script](https://github.com/Quelab/green-bean-connect-utils/blob/master/configuration/generateGreenBeanConnectConfig.js) that creates a user + uuid configuration for the device. 
+5. The generated configuration file needs to find its way to */root/chillhub-firmware/share/config/chillhub.json* on the device.

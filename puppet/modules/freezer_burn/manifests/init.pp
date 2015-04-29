@@ -41,6 +41,8 @@ class freezer_burn {
   package {'git': ensure => present}
   package {'libusb-1.0-0-dev': ensure => present}
 
+  file {'/usr/bin/node':
+  }
   package { 'green-bean':
     ensure   => present,
     provider => 'npm',

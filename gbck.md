@@ -69,3 +69,34 @@ The GBCK software expects to talk to FireBase which is a database in the cloud. 
 3. After you've created your app you will need to enable email + password based authentication. Login & Auth => Email & Password => Enable Email & Password Authentication
 4. On the bottom of this same screen you can add a user account for your app. You can also add a user automatically from the command line using the [GenerateFirebaseLoginAndToken script](https://github.com/FirstBuild/green-bean-connect-utils/blob/master/configuration/generateFirebaseLoginAndToken.js) There are instructions on the readme that seem to suggest you can do all of the [Network + Cloud setup](https://github.com/FirstBuild/green-bean-connect-utils/tree/master/configuration) with a couple of scripts too. Haven't tried it. I did create a different generate [script](https://github.com/Quelab/green-bean-connect-utils/blob/master/configuration/generateGreenBeanConnectConfig.js) that creates a user + uuid configuration for the device. 
 5. The generated configuration file needs to find its way to */root/chillhub-firmware/share/config/chillhub.json* on the device.
+
+..
+npm install
+node generateFirebaseLoginAndToken.js https://blistering-torch-2068.firebaseio.com/ derp@derp.com
+sudo node chillhub.js
+Package file opened.
+Found software version: 0.1.14
+Sending this SW version to firebase: 0.1.14
+Config file opened.
+Successful firebase login.
+Chillhub device successfully created.
+Connected to firebase, initializing devices.
+registering new USB device ttyACM0
+Serial port input buffer flushed.
+Calling open callback...
+Received name: chilldemo
+Received UUID: 41e1b18e-2d12-4306-9211-c1068bf7f76d
+REGISTERed device "chilldemo" with UUID 41e1b18e-2d12-4306-9211-c1068bf7f76d!
+Checking to see if attachment exists in firebase.
+Attachment does not exist.
+Attachment successfully created.
+chilldemo SUBSCRIBEs to 8!
+chilldemo SUBSCRIBEs to 13!
+chilldemo SUBSCRIBEs to 12!
+Registering resource Humidity with resource ID 147
+Registering resource Temperature with resource ID 148
+Resource successfully created for Humidity with resource ID 147
+Resource successfully created for Temperature with resource ID 148
+Updated Humidity to 33
+Updated Temperature to 27
+Updated Humidity to 33

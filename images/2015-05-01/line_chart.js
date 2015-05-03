@@ -13,7 +13,7 @@ render = function(id, raw_data){
       duration = data[n-1].Time - data[0].Time;
       now = data[n-1].Time;
 
-   margin = {top: 6, right: 0, bottom: 20, left: 40},
+   margin = {top: 8, right: 40, bottom: 20, left: 40},
       width = 960 - margin.right,
       height = 120 - margin.top - margin.bottom;
 
@@ -22,13 +22,22 @@ render = function(id, raw_data){
       .range([0, width]);
 
    y_scale = d3.scale.linear()
-      .domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity})])
+      .domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity}) + 5])
+      .range([height, 0]);
+
+   temp_scale = d3.scale.linear()
+      .domain([d3.min(data, function(d){return d.Temperature}), d3.max(data, function(d){ return d.Temperature})])
       .range([height, 0]);
 
    line = d3.svg.line()
       .interpolate("basis")
       .x(function(d, i) { return x(now - (n - 1 - i) * duration); })
       .y(function(d, i) { return y_scale(d.Humidity); });
+
+   temp_line = d3.svg.line()
+      .interpolate("basis")
+      .x(function(d, i) { return x(now - (n - 1 - i) * duration); })
+      .y(function(d, i) { return temp_scale(d.Temperature); });      
 
    svg = d3.select(id).append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -50,13 +59,27 @@ render = function(id, raw_data){
 
    y_axis = svg.append("g")
       .attr("class", "y axis")
+      .style("fill", "steelblue")
       .call(y_scale.axis = d3.svg.axis().scale(y_scale).orient("left").ticks(6));
+
+  temp_axis = svg.append("g")
+      .attr("class", "temp axis")
+      .attr("transform", "translate(" + width + " ,0)")
+      .style("fill", "red")
+      .call(temp_scale.axis = d3.svg.axis().scale(temp_scale).orient("right").ticks(6));
+
 
    path = svg.append("g")
       .attr("clip-path", "url(#clip)")
     .append("path")
       .datum(data)
       .attr("class", "line");
+
+   temp_path = svg.append("g")
+      .attr("clip-path", "url(#clip)")
+    .append("path")
+      .datum(data)
+      .attr("class", "temp-line")
 
    transition = d3.select({}).transition()
       .duration(750)
@@ -66,7 +89,9 @@ tick = function(new_data) {
     console.log(new_data);
     var now = new_data.Time;
     x.domain([now - (n - 2) * duration, now - duration]);
-    y_scale.domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity})]);
+
+    y_scale.domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity})+ 5]);
+    temp_scale.domain([d3.min(data, function(d){return d.Temperature}), d3.max(data, function(d){ return d.Temperature})]);
 
     // push the accumulated count onto the back, and reset the count
     data.push(new_data);
@@ -76,11 +101,18 @@ tick = function(new_data) {
         .attr("d", line)
         .attr("transform", null);
 
+    // redraw the line
+    svg.select(".temp-line")
+        .attr("d", temp_line)
+        .attr("transform", null);
     // slide the x-axis left
     axis.call(x.axis);
 
     // slide the line left
     path.transition()
+        .attr("transform", "translate(" + x(now - (n - 1) * duration) + ")");
+
+    temp_path.transition()
         .attr("transform", "translate(" + x(now - (n - 1) * duration) + ")");
 
     // pop the old data point off the front

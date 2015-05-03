@@ -10,6 +10,7 @@ Accomplishing those two goals is all about sensing the environment inside of the
 
 ## Background
 * [How Does the Freezer Burn our Food?](http://www3.interscience.wiley.com/cgi-bin/fulltext/122278975/PDFSTART)
-
+* [Humidity and Temperature Sensor Testing](http://www.kandrsmith.org/RJS/Misc/calib_dht22.html)
 [Green Bean Connect Kit Setup](./gbck.md)
 
+git checkout --orphan gh-pages

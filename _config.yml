@@ -2,7 +2,7 @@
 title: Freezer Burn
 email: kak.bo.che@gmail.com
 description: The QueLab project to reduce freezer burn using sensors on the chillhub smart refrigerator.
-baseurl: "" # the subpath of your site, e.g. /blog/
+baseurl: "/freezer_burn/" # the subpath of your site, e.g. /blog/
 url: "http://quelab.github.io/freezer_burn/" # the base hostname & protocol for your site
 github_username:  kak-bo-che
 

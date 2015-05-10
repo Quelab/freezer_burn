@@ -1,6 +1,7 @@
 
 var initializeHumidityChart = function(fb, callback){
-  var ref = new fb("https://quelab-chillhub.firebaseio.com/users/simplelogin%3A1/devices/chillhubs/d84f6894-b3c0-4dd5-9b82-5632b8a7d1ce/serial_data");
+  date = new Date().toISOString().substring(0, 10);
+  var ref = new fb("https://quelab-chillhub.firebaseio.com/freezer_burn_sht15/78f3a753-4d28-499a-8b08-c20d32619544/" + date);
   ref.limitToLast(100).once("value", function(snapshot) {
     var data = snapshot.val();
     callback(data);
@@ -10,7 +11,8 @@ var initializeHumidityChart = function(fb, callback){
 }
 
 var listenForHumidityChange = function(fb, callback){
-  var ref = new fb("https://quelab-chillhub.firebaseio.com/users/simplelogin%3A1/devices/chillhubs/d84f6894-b3c0-4dd5-9b82-5632b8a7d1ce/serial_data");
+  date = new Date().toISOString().substring(0, 10);
+  var ref = new fb("https://quelab-chillhub.firebaseio.com/freezer_burn_sht15/78f3a753-4d28-499a-8b08-c20d32619544/" + date);
   ref.limitToLast(5).on("child_added", function(snapshot) {
     var data = snapshot.val();
     callback(data);

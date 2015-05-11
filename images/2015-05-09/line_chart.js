@@ -55,7 +55,7 @@ render = function(id, raw_data){
    x_axis = svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
-      .call(x_scale.axis = d3.svg.axis().scale(x_scale).orient("bottom"));
+      .call(x_scale.axis = d3.svg.axis().scale(x_scale).orient("bottom").ticks(8));
 
    y_axis = svg.append("g")
       .attr("class", "y axis")

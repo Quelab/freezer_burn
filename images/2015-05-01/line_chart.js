@@ -9,18 +9,16 @@ render = function(id, raw_data){
     data.push(d);
   });
 
-   n = data.length,
-      duration = data[n-1].Time - data[0].Time;
-      now = data[n-1].Time;
-   console.log(data);
-   console.log(Date(data[0].Time));
+   n = data.length;
+   now = data[n-1].Time;
+   start = data[0].Time;
 
-   margin = {top: 8, right: 40, bottom: 20, left: 40},
-      width = 960 - margin.right,
-      height = 120 - margin.top - margin.bottom;
+   margin = {top: 8, right: 50, bottom: 30, left: 50},
+      width = 800 - margin.right - margin.left,
+      height = 140 - margin.top - margin.bottom;
 
-   x = d3.time.scale()
-      .domain([now - (n - 2) * duration, now - duration])
+   x_scale = d3.time.scale()
+     .domain([d3.min(data, function(d){return d.Time}), d3.max(data, function(d){return d.Time})])
       .range([0, width]);
 
    y_scale = d3.scale.linear()
@@ -33,13 +31,13 @@ render = function(id, raw_data){
 
    line = d3.svg.line()
       .interpolate("basis")
-      .x(function(d, i) { return x(now - (n - 1 - i) * duration); })
+      .x(function(d, i) { return x_scale(d.Time); })
       .y(function(d, i) { return y_scale(d.Humidity); });
 
    temp_line = d3.svg.line()
       .interpolate("basis")
-      .x(function(d, i) { return x(now - (n - 1 - i) * duration); })
-      .y(function(d, i) { return temp_scale(d.Temperature); });      
+      .x(function(d, i) { return x_scale(d.Time); })
+      .y(function(d, i) { return temp_scale(d.Temperature); });
 
    svg = d3.select(id).append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -54,22 +52,39 @@ render = function(id, raw_data){
       .attr("width", width)
       .attr("height", height);
 
-   axis = svg.append("g")
+   x_axis = svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
-      .call(x.axis = d3.svg.axis().scale(x).orient("bottom"));
+      .call(x_scale.axis = d3.svg.axis().scale(x_scale).orient("bottom").ticks(8));
 
    y_axis = svg.append("g")
       .attr("class", "y axis")
       .style("fill", "steelblue")
       .call(y_scale.axis = d3.svg.axis().scale(y_scale).orient("left").ticks(6));
 
+  svg.append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "end")
+      .attr("y", 6)
+      .attr("dy", ".75em")
+      .attr("transform", "rotate(-90), translate(-2,-50)")
+      .style("fill", "steelblue")
+      .text("% Rel. Humidity");
+
   temp_axis = svg.append("g")
       .attr("class", "temp axis")
       .attr("transform", "translate(" + width + " ,0)")
       .style("fill", "red")
-      .call(temp_scale.axis = d3.svg.axis().scale(temp_scale).orient("right").ticks(6));
+      .call(temp_scale.axis = d3.svg.axis().scale(temp_scale).orient("right").tickFormat(d3.format("d")));
 
+  svg.append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "end")
+      .attr("y", 6)
+      .attr("dy", ".75em")
+      .attr("transform", "translate(" + (width+45) + ",0)")// + height +")")
+      .style("fill", "red")
+      .text("\u00B0C");
 
    path = svg.append("g")
       .attr("clip-path", "url(#clip)")
@@ -88,16 +103,15 @@ render = function(id, raw_data){
       .ease("linear");
 }
 tick = function(new_data) {
-    console.log(new_data);
     var now = new_data.Time;
-    console.log(Date(now*1000));
-    x.domain([now - (n - 2) * duration, now - duration]);
 
+    data.push(new_data);
+    //x_scale.domain([data[1].Time, data[n].Time]);
+    x_scale.domain([d3.min(data, function(d){return d.Time}), d3.max(data, function(d){return d.Time})])
     y_scale.domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity})+ 5]);
     temp_scale.domain([d3.min(data, function(d){return d.Temperature}), d3.max(data, function(d){ return d.Temperature})]);
 
     // push the accumulated count onto the back, and reset the count
-    data.push(new_data);
 
     // redraw the line
     svg.select(".line")
@@ -108,15 +122,17 @@ tick = function(new_data) {
     svg.select(".temp-line")
         .attr("d", temp_line)
         .attr("transform", null);
+
     // slide the x-axis left
-    axis.call(x.axis);
+    x_axis.call(x_scale.axis);
 
     // slide the line left
+    duration = x_scale(data[1].Time) - x_scale(data[0].Time);
     path.transition()
-        .attr("transform", "translate(" + x(now - (n - 1) * duration) + ")");
-
+      .attr("transform", "translate(" + duration + ")");
     temp_path.transition()
-        .attr("transform", "translate(" + x(now - (n - 1) * duration) + ")");
+      .attr("transform", "translate(" + duration + ")");
+
 
     // pop the old data point off the front
     data.shift();

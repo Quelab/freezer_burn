@@ -12,3 +12,8 @@ This is a nice sensor but it requires modifications to the ChillHub Arduino libr
 ### Required Libraries
 * [SHT1x](https://github.com/practicalarduino/SHT1x)
 * [Quelab/ChillHub-Arduino](https://github.com/Quelab/ChillHubArduino)
+
+## HTU21D ~$14
+### Required Libraries
+* [HTU21D Breakout](https://github.com/sparkfun/HTU21D_Breakout/tree/master/Libraries/Arduino)
+* [Quelab/ChillHub-Arduino](https://github.com/Quelab/ChillHubArduino)

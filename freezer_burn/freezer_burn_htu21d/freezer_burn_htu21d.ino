@@ -1,33 +1,44 @@
-#include "chillhub.h"
-#include "crc.h"
+
 #include <EEPROM.h>
 #include <string.h>
 #include <stddef.h>
-#include <dht11.h>
+#include <Wire.h>
+#include <TimerOne.h>
 
+#include "chillhub.h"
+#include "crc.h"
+#include "HTU21D.h"
 
-#define DHT11PIN 2
-#define FIVE_MINUTE_TIMER_ID  0x70
 #define MAX_UUID_LENGTH 48
 #define EEPROM_SIZE 1024
-
-// Define the port pin for the L LED
-#define LedL 13
-#define Analog 0
 
 // Define this if no debug uart is available
 #define DebugUart_UartPutString(...)
 
-// Define cloud IDs for remote communication
-dht11 DHT11;
+// Variables
+const int startPin = 2;
+const int led = LED_BUILTIN;
+const uint32_t uSecondTimerValue = 50000;
+const uint16_t tenSecondsOfCycles = 10000000/uSecondTimerValue;
+int ledState = LOW;
+uint8_t button_state = LOW; // use volatile for shared variables
+uint8_t last_button_state = LOW;
+uint8_t logic_state = LOW;
+uint8_t last_logic_state = LOW;
+
+// These are shared with the interupt code
+volatile uint8_t read_temp_humidity = 0;
+volatile uint8_t run_experiment = LOW;
 
 enum E_CloudIDs {
-  LedID = 0x91,
-  AnalogID = 0x92,
+  ExperimentStateID = 0x91,
   HumidityID = 0x93,
   TemperatureID= 0x94,
   LastID
 };
+
+//Create an instance of the humidity sensor object
+HTU21D myHumidity;
 
 // Define the EEPROM data structure.
 typedef struct Store {
@@ -46,7 +57,7 @@ Eeprom eeprom;
 
 // A default UUID to use if none has been assigned.
 // Each device needs it's own UUID.
-const char defaultUUID[] = "41e1b18e-2d12-4306-9211-c1068bf7f76d";
+const char defaultUUID[] = "644a5f55-1d08-43fa-874a-404ce401430f";
 
 // register the name (type) of this device with the chillhub
 // syntax is ChillHub.setup(device type, UUID);
@@ -60,16 +71,16 @@ static void initializeEeprom(void);
 void keepaliveCallback(uint8_t dummy);
 void setDeviceUUID(char *pUUID);
 
-void updateTemperatureAndHumidity(void) {
-  static unsigned long oldTime = 0;
-  unsigned long time = millis();
-  
-  if ((time - oldTime) > 10000) {
-    oldTime = time;
-    int chk = DHT11.read(DHT11PIN);
-    ChillHub.updateCloudResourceU16(HumidityID, DHT11.humidity);
-    ChillHub.updateCloudResourceU16(TemperatureID, DHT11.temperature);
-  }  
+void updateTemperatureAndHumidity(uint8_t experiment_status) {
+    float humidity_f, temperature_f;
+    int16_t humidity, temperature;
+    humidity_f = myHumidity.readHumidity();
+    temperature_f = myHumidity.readTemperature();
+    humidity = humidity_f;
+    temperature = temperature_f;
+    ChillHub.updateCloudResourceI16(HumidityID, humidity);
+    ChillHub.updateCloudResourceI16(TemperatureID, temperature);
+    ChillHub.updateCloudResourceU16(ExperimentStateID,  (uint16_t)experiment_status);
 }
 
 // This function gets called when you plug the Arduino into the chillhub.
@@ -83,7 +94,7 @@ void deviceAnnounce() {
   // Each device must has a unique version 4 UUID.  See
   // http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29
   // for details.
-  ChillHub.setup("freezer_burn_dht11", eeprom.store.UUID);
+  ChillHub.setup("freezer_burn_htu21d", eeprom.store.UUID);
   
   // add a listener for device ID request type
   // Device ID is a request from the chill hub for the Arduino to register itself.
@@ -98,12 +109,49 @@ void deviceAnnounce() {
   // chillhub-firmware.
   // No cloud listener is required for this.
   ChillHub.subscribe(setDeviceUUIDType, (chillhubCallbackFunction)setDeviceUUID);
-  ChillHub.createCloudResourceU16("Humidity", HumidityID, 0, 0);
-  ChillHub.createCloudResourceU16("Temperature", TemperatureID, 0, 0);
+  ChillHub.createCloudResourceI16("Humidity", HumidityID, 0, 0);
+  ChillHub.createCloudResourceI16("Temperature", TemperatureID, 0, 0);
+  ChillHub.createCloudResourceU16("ExperimentState", ExperimentStateID, 0, 0);
 }
 
-// This is the regular Arduino setup function.
-void setup() {
+void setExperimentState(void)
+{
+  // 1 second Sensor Read Timer
+  read_temp_humidity++; 
+  if (read_temp_humidity >= tenSecondsOfCycles){
+    read_temp_humidity = 0;
+  }
+  
+  button_state = !digitalRead(startPin);
+
+  // Button Debounce
+  if (last_button_state == button_state){
+    logic_state = button_state;
+  }
+  
+  // Falling Edge Trigger
+  if(logic_state == LOW && last_logic_state  == HIGH){
+    run_experiment = !run_experiment;
+  }
+
+  //  Blink LED
+  if ( run_experiment == HIGH){
+    if (ledState == LOW) {
+      ledState = HIGH;
+    } else {
+      ledState = LOW;
+    }
+  } else {
+    ledState = LOW;
+  }
+  
+  digitalWrite(led, ledState);
+  last_logic_state = logic_state;
+  last_button_state = button_state;
+}
+
+void setup()
+{
   // Start serial port for communications with the chill hub
   Serial.begin(115200);
   delay(200);
@@ -112,12 +160,31 @@ void setup() {
   
   // Attempt to initialize with the chill hub
   deviceAnnounce();
+  
+  pinMode(startPin, INPUT_PULLUP);
+  pinMode(led, OUTPUT);
+  Timer1.initialize(uSecondTimerValue);
+  Timer1.attachInterrupt(setExperimentState);
+  myHumidity.begin();
 }
 
-// This is the normal Arduino run loop.
-void loop() {
+
+
+void loop()
+{
+  uint8_t temp_run_experiment =     LOW;
+  uint8_t temp_read_temp_humidity = LOW;
+
   ChillHub.loop();
-  updateTemperatureAndHumidity();
+
+  noInterrupts();
+  temp_run_experiment = run_experiment;
+  temp_read_temp_humidity = !read_temp_humidity;
+  interrupts();
+
+  if (temp_read_temp_humidity){
+    updateTemperatureAndHumidity(temp_run_experiment);
+  }
 }
 
 // Save the data to EEPROM.

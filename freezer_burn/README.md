@@ -17,3 +17,4 @@ This is a nice sensor but it requires modifications to the ChillHub Arduino libr
 ### Required Libraries
 * [HTU21D Breakout](https://github.com/sparkfun/HTU21D_Breakout/tree/master/Libraries/Arduino)
 * [Quelab/ChillHub-Arduino](https://github.com/Quelab/ChillHubArduino)
+* [TimerOne](https://github.com/PaulStoffregen/TimerOne)

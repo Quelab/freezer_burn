@@ -21,6 +21,7 @@ const int led = LED_BUILTIN;
 const uint32_t uSecondTimerValue = 50000;
 const uint16_t tenSecondsOfCycles = 10000000/uSecondTimerValue;
 int ledState = LOW;
+
 uint8_t button_state = LOW; // use volatile for shared variables
 uint8_t last_button_state = LOW;
 uint8_t logic_state = LOW;
@@ -32,6 +33,7 @@ volatile uint8_t run_experiment = LOW;
 
 enum E_CloudIDs {
   ExperimentStateID = 0x91,
+  remoteUpdateExperimentID = 0x92,
   HumidityID = 0x93,
   TemperatureID= 0x94,
   LastID
@@ -70,6 +72,7 @@ static void saveEeprom(void);
 static void initializeEeprom(void);
 void keepaliveCallback(uint8_t dummy);
 void setDeviceUUID(char *pUUID);
+static void remoteSetExperimentState(uint8_t state);
 
 void updateTemperatureAndHumidity(uint8_t experiment_status) {
     float humidity_f, temperature_f;
@@ -109,11 +112,26 @@ void deviceAnnounce() {
   // chillhub-firmware.
   // No cloud listener is required for this.
   ChillHub.subscribe(setDeviceUUIDType, (chillhubCallbackFunction)setDeviceUUID);
+
+  ChillHub.addCloudListener(remoteUpdateExperimentID, (chillhubCallbackFunction)remoteSetExperimentState);
+
   ChillHub.createCloudResourceI16("Humidity", HumidityID, 0, 0);
   ChillHub.createCloudResourceI16("Temperature", TemperatureID, 0, 0);
   ChillHub.createCloudResourceU16("ExperimentState", ExperimentStateID, 0, 0);
+  ChillHub.createCloudResourceU16("StartStopExperiment", remoteUpdateExperimentID, 1, 0);
 }
 
+static void remoteSetExperimentState(uint8_t state)
+{
+  static uint8_t first_time=1;
+  if (first_time == 0){
+     noInterrupts();
+     run_experiment = !run_experiment;
+     interrupts();
+  } else {
+    first_time = 0;
+  }
+}
 void setExperimentState(void)
 {
   // 1 second Sensor Read Timer

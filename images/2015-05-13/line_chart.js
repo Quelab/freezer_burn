@@ -22,11 +22,11 @@ render = function(id, raw_data){
       .range([0, width]);
 
    y_scale = d3.scale.linear()
-      .domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity}) + 5])
+      .domain([d3.min(data, function(d){return d.Humidity}) - 1, d3.max(data, function(d){ return d.Humidity}) + 4])
       .range([height, 0]);
 
    temp_scale = d3.scale.linear()
-      .domain([d3.min(data, function(d){return d.Temperature}), d3.max(data, function(d){ return d.Temperature})])
+      .domain([d3.min(data, function(d){return d.Temperature}) - 4, d3.max(data, function(d){ return d.Temperature}) + 1])
       .range([height, 0]);
 
    line = d3.svg.line()
@@ -101,55 +101,44 @@ render = function(id, raw_data){
    transition = d3.select({}).transition()
       .duration(750)
       .ease("linear");
+}
+tick = function(new_data) {
+    var now = new_data.Time;
 
-    // These two redraws required when no update is used.
+    data.push(new_data);
+    //x_scale.domain([data[1].Time, data[n].Time]);
+    x_scale.domain([d3.min(data, function(d){return d.Time}), d3.max(data, function(d){return d.Time})])
+    y_scale.domain([d3.min(data, function(d){return d.Humidity}) - 1, d3.max(data, function(d){ return d.Humidity})+ 4]);
+    temp_scale.domain([d3.min(data, function(d){return d.Temperature}) - 4, d3.max(data, function(d){ return d.Temperature}) + 1]);
+
+    // push the accumulated count onto the back, and reset the count
+
     // redraw the line
     svg.select(".line")
         .attr("d", line)
         .attr("transform", null);
 
-    // redraw the temp-line
+    // redraw the line
     svg.select(".temp-line")
         .attr("d", temp_line)
         .attr("transform", null);
+
+    // slide the x-axis left
+    x_axis.call(x_scale.axis);
+
+    // slide the line left
+    duration = x_scale(data[1].Time) - x_scale(data[0].Time);
+    path.transition()
+      .attr("transform", "translate(" + duration + ")");
+    temp_path.transition()
+      .attr("transform", "translate(" + duration + ")");
+
+    // pop the old data point off the front
+    data.shift();
+
 }
-
-// tick = function(new_data) {
-//     var now = new_data.Time;
-//     data.push(new_data);
-
-//     x_scale.domain([d3.min(data, function(d){return d.Time}), d3.max(data, function(d){return d.Time})])
-//     y_scale.domain([d3.min(data, function(d){return d.Humidity}), d3.max(data, function(d){ return d.Humidity})+ 5]);
-//     temp_scale.domain([d3.min(data, function(d){return d.Temperature}), d3.max(data, function(d){ return d.Temperature})]);
-
-//     // push the accumulated count onto the back, and reset the count
-//     // redraw the line
-//     svg.select(".line")
-//         .attr("d", line)
-//         .attr("transform", null);
-
-//     // redraw the line
-//     svg.select(".temp-line")
-//         .attr("d", temp_line)
-//         .attr("transform", null);
-
-//     // slide the x-axis left
-//     x_axis.call(x_scale.axis);
-
-//     // slide the line left
-//     duration = x_scale(data[1].Time) - x_scale(data[0].Time);
-//     path.transition()
-//       .attr("transform", "translate(" + duration + ")");
-//     temp_path.transition()
-//       .attr("transform", "translate(" + duration + ")");
-
-//     // pop the old data point off the front
-//     data.shift();
-
-// }
-// line_chart.update = tick;
-
   line_chart.render = render;
+  line_chart.update = tick;
   return line_chart;
 
 })()
